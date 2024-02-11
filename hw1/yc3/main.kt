@@ -18,13 +18,13 @@ class Node(var key: Long) {
         }
     }
 
-    fun preOrder() {
-        print(this.key.toString() + " ")
+    fun preOrder(foo: (value: Long) -> Unit) {
+        foo(this.key)
         if (childLeft != null) {
-            childLeft?.preOrder()
+            childLeft?.preOrder(foo)
         }
         if (childRight != null) {
-            childRight?.preOrder()
+            childRight?.preOrder(foo)
         }
     }
 }
@@ -37,6 +37,6 @@ fun main(args: Array<String>) {
         var number = readln().toLong()
         tree.add(number)
     }
-    tree.preOrder()
+    tree.preOrder({value -> print(value.toString() + " ")})
 }
 
