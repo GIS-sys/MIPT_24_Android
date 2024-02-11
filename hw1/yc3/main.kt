@@ -1,17 +1,42 @@
-/*class Node(value: Long) {
-    var childLeft = null
-    var childRight = null
-}*/
+class Node(var key: Long) {
+    var childLeft: Node? = null
+    var childRight: Node? = null
+
+    fun add(newValue: Long) {
+        if (this.key <= newValue) {
+            if (childRight != null) {
+                childRight?.add(newValue)
+            } else {
+                childRight = Node(newValue)
+            }
+        } else {
+            if (childLeft != null) {
+                childLeft?.add(newValue)
+            } else {
+                childLeft = Node(newValue)
+            }
+        }
+    }
+
+    fun preOrder() {
+        print(this.key.toString() + " ")
+        if (childLeft != null) {
+            childLeft?.preOrder()
+        }
+        if (childRight != null) {
+            childRight?.preOrder()
+        }
+    }
+}
 
 fun main(args: Array<String>) {
     var n = readln().toLong()
-    var tree: Set<Long> = setOf()
-    for (i in 1..n) {
+    var rootNumber = readln().toLong()
+    var tree = Node(rootNumber)
+    for (i in 2..n) {
         var number = readln().toLong()
-        tree += number
+        tree.add(number)
     }
-    for (number in tree) {
-        print(number.toString())
-    }
+    tree.preOrder()
 }
 
