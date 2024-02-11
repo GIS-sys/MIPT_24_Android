@@ -1,54 +1,40 @@
-class Generic<T : Any>(val cls: Class<T>) {
-    companion object {
-        inline operator fun <reified T : Any>invoke() = Generic(T::class.java)
-    }
-
-    fun checkType(t: Any) {
-        when {
-            cls.isAssignableFrom(t.javaClass) -> println("Correct type")
-            else -> println("Wrong type")
-       }
-    }
-}
-
-
-
 typealias TypeID = Long
+typealias TypeHeight = Double
 
 interface Animal {
     val id: TypeID
-    val height: Double
+    val height: TypeHeight
 }
 
 interface LoudAnimal : Animal {
     fun sound(): String
 }
 
-class Cat(override val id: TypeID, override val height: Double): LoudAnimal {
+class Cat(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
     override fun sound(): String {
         return "purr"
     }
 }
 
-class Dog(override val id: TypeID, override val height: Double): LoudAnimal {
+class Dog(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
     override fun sound(): String {
         return "bow-wow"
     }
 }
 
-class Hippo(override val id: TypeID, override val height: Double): LoudAnimal {
+class Hippo(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
     override fun sound(): String {
         return "hohoho"
     }
 }
 
-class Horse(override val id: TypeID, override val height: Double): LoudAnimal {
+class Horse(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
     override fun sound(): String {
         return "neigh"
     }
 }
 
-class Fish(override val id: TypeID, override val height: Double): Animal {
+class Fish(override val id: TypeID, override val height: TypeHeight): Animal {
 }
 
 
@@ -61,6 +47,8 @@ class Keeper(var id: TypeID, var name: String) {
 class Zoo {
     var idToAnimal = HashMap<TypeID, Animal>()
     var animalIdToKeeper = HashMap<TypeID, Keeper>()
+    var keeperIdToAnimals = HashMap<TypeID, HashMap<TypeID, Animal>>()
+    var keeperNameToAnimals = HashMap<String, HashMap<TypeID, Animal>>()
 
     constructor() {
     }
@@ -76,28 +64,41 @@ class Zoo {
     }
 
     fun attachKeeper(keeper: Keeper, animal: Animal) {
+        if (!this.keeperIdToAnimals.contains(keeper.id)) {
+            this.keeperIdToAnimals.put(keeper.id, HashMap<TypeID, Animal>())
+            this.keeperNameToAnimals.put(keeper.name, HashMap<TypeID, Animal>())
+        }
+        this.keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
+        this.keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
         this.animalIdToKeeper.put(animal.id, keeper)
+    }
+
+    fun removeAnimalById(id: TypeID) {
+        idToAnimal.remove(id)
+        if (animalIdToKeeper.contains(id)) {
+            val keeper = animalIdToKeeper.getValue(id)
+            this.keeperIdToAnimals.getValue(keeper.id).remove(id)
+            this.keeperNameToAnimals.getValue(keeper.name).remove(id)
+            animalIdToKeeper.remove(id)
+        }
     }
 
     fun findAnimalById(id: TypeID): Animal {
         return idToAnimal.getValue(id)
     }
 
-    fun removeAnimalById(id: TypeID) {
-        idToAnimal.remove(id)
-        animalIdToKeeper.remove(id)
-    }
-
     fun getAnimalsForKeeperId(id: TypeID): List<Animal> {
-        TODO("Zoo::animalsForKeeperId")
+        return ArrayList(keeperIdToAnimals.getValue(id).values)
     }
 
     fun getAnimalsForKeeperName(name: String): List<Animal> {
-        TODO("Zoo::animalsForKeeperName")
+        return ArrayList(keeperNameToAnimals.getValue(name).values)
     }
 
-    fun getAnimalsHeigherThan(height: Double): List<Animal> {
-        TODO("Zoo::getAnimalsHeigherThan")
+    // since as far as task implies height may be random,
+    //   such structures as TreeMap will not be faster
+    fun getAnimalsHeigherThan(height: TypeHeight): List<Animal> {
+        return this.idToAnimal.values.filter { it.height > height }
     }
 
     fun getAllSoundAnimals(): List<Animal> {
@@ -140,9 +141,9 @@ fun main() {
     zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5))
     zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3))
     zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4))
-    // zooFull.getAnimalsForKeeperId(keeperCats.id)
-    // zooFull.getAnimalsForKeeperName(keeperBigGood.name)
-    // zooFull.getAnimalsHeigherThan(2.0)
+    zooFull.getAnimalsForKeeperId(keeperCats.id)
+    zooFull.getAnimalsForKeeperName(keeperBigGood.name)
+    zooFull.getAnimalsHeigherThan(2.0)
     zooFull.getAllSoundAnimals()
     zooFull.getAllAnimalsOfType<Cat>().forEach { println(it.id) }
 }
