@@ -1,5 +1,22 @@
+class Generic<T : Any>(val cls: Class<T>) {
+    companion object {
+        inline operator fun <reified T : Any>invoke() = Generic(T::class.java)
+    }
+
+    fun checkType(t: Any) {
+        when {
+            cls.isAssignableFrom(t.javaClass) -> println("Correct type")
+            else -> println("Wrong type")
+       }
+    }
+}
+
+
+
+typealias TypeID = Long
+
 interface Animal {
-    val id: Long
+    val id: TypeID
     val height: Double
 }
 
@@ -7,66 +24,71 @@ interface LoudAnimal : Animal {
     fun sound(): String
 }
 
-class Cat(override val id: Long, override val height: Double): LoudAnimal {
+class Cat(override val id: TypeID, override val height: Double): LoudAnimal {
     override fun sound(): String {
         return "purr"
     }
 }
 
-class Dog(override val id: Long, override val height: Double): LoudAnimal {
+class Dog(override val id: TypeID, override val height: Double): LoudAnimal {
     override fun sound(): String {
         return "bow-wow"
     }
 }
 
-class Hippo(override val id: Long, override val height: Double): LoudAnimal {
+class Hippo(override val id: TypeID, override val height: Double): LoudAnimal {
     override fun sound(): String {
         return "hohoho"
     }
 }
 
-class Horse(override val id: Long, override val height: Double): LoudAnimal {
+class Horse(override val id: TypeID, override val height: Double): LoudAnimal {
     override fun sound(): String {
         return "neigh"
     }
 }
 
-class Fish(override val id: Long, override val height: Double): Animal {
+class Fish(override val id: TypeID, override val height: Double): Animal {
 }
 
 
 
-class Keeper(var id: Long, var name: String) {
+class Keeper(var id: TypeID, var name: String) {
 }
 
 
 
 class Zoo {
+    var idToAnimal = HashMap<TypeID, Animal>()
+    var animalIdToKeeper = HashMap<TypeID, Keeper>()
+
     constructor() {
-        TODO("Zoo()") //println(it)
     }
 
-    constructor(animals: List<Animal>?) {
-        TODO("Zoo(animals)") //animals?.forEach { println(it) }
+    constructor(animals: List<Animal>) {
+        animals.forEach {
+            this.addAnimal(it)
+        }
     }
 
     fun addAnimal(animal: Animal) {
-        TODO("Zoo::addAnimal")
+        this.idToAnimal.put(animal.id, animal)
     }
 
     fun attachKeeper(keeper: Keeper, animal: Animal) {
-        TODO("Zoo::attachKeeper")
+        this.animalIdToKeeper.put(animal.id, keeper)
     }
 
-    fun findAnimalById(id: Long): Animal {
-        TODO("Zoo::findAnimalById")
+    fun findAnimalById(id: TypeID): Animal {
+        return idToAnimal.getValue(id)
     }
 
-    fun removeAnimalById(id: Long) {
-        TODO("Zoo::findAnimalById")
+    fun removeAnimalById(id: TypeID) {
+        idToAnimal.remove(id)
+        animalIdToKeeper.remove(id)
     }
 
-    fun getAnimalsForKeeperId(id: Long): List<Animal> {
+    fun getAnimalsForKeeperId(id: TypeID): List<Animal> {
         TODO("Zoo::animalsForKeeperId")
     }
 
@@ -79,18 +101,23 @@ class Zoo {
     }
 
     fun getAllSoundAnimals(): List<Animal> {
-        TODO("Zoo::getAllSoundAnimals")
+        return this.idToAnimal.values.filter {
+            when (it) {
+                is LoudAnimal -> true
+                else -> false
+            }
+        }
     }
 
-    fun <T:Animal> getAllAnimalsOfType(): List<T> {
-        TODO("Zoo::getAllAnimalsOfType")
+    inline fun <reified T: Animal> getAllAnimalsOfType(): List<Animal> {
+        return this.idToAnimal.values.filter { T::class.java.isAssignableFrom(it.javaClass) }
     }
 }
 
 
 
-fun main(args: Array<String>) {
-    var zooEmpty = Zoo()
+fun main() {
+    Zoo()
     var zooFull = Zoo(listOf(
         Cat(1, 0.25),
         Dog(2, 0.5),
@@ -99,10 +126,13 @@ fun main(args: Array<String>) {
         Cat(5, 0.3)
     ))
     zooFull.addAnimal(Fish(6, 0.05))
+    zooFull.findAnimalById(1)
     zooFull.findAnimalById(2)
-    zooFull.findAnimalById(5)
-    zooFull.removeAnimalById(5)
-    zooFull.findAnimalById(5)
+    zooFull.removeAnimalById(2)
+    try {
+        zooFull.findAnimalById(2)
+    } catch (e: java.util.NoSuchElementException) {
+    }
     var keeperCats = Keeper(1, "keeper number one")
     var keeperBigGood = Keeper(2, "superhero underground")
     var keeperBigEvil = Keeper(3, "superhero underground")
@@ -110,12 +140,11 @@ fun main(args: Array<String>) {
     zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5))
     zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3))
     zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4))
-    zooFull.getAnimalsForKeeperId(keeperCats.id)
-    zooFull.getAnimalsForKeeperName(keeperBigGood.name)
-    zooFull.getAnimalsHeigherThan(2.0)
+    // zooFull.getAnimalsForKeeperId(keeperCats.id)
+    // zooFull.getAnimalsForKeeperName(keeperBigGood.name)
+    // zooFull.getAnimalsHeigherThan(2.0)
     zooFull.getAllSoundAnimals()
-    zooFull.getAllAnimalsOfType<Cat>()
-    
+    zooFull.getAllAnimalsOfType<Cat>().forEach { println(it.id) }
 }
 
 /*
