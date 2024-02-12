@@ -150,20 +150,32 @@ fun main() {
     zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5))
     zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3))
     zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4))
-    // ???
+    assert(zooFull.animalIdToKeeper.size == 4)
+    assert(zooFull.keeperIdToAnimals.size == 3)
+    assert(zooFull.keeperNameToAnimals.size == 2)
     // 6. animals for keeper id
-    zooFull.getAnimalsForKeeperId(keeperCats.id)
-    // ???
+    var catKeepersAnimals = zooFull.getAnimalsForKeeperId(keeperCats.id)
+    assert(catKeepersAnimals.size == 2)
+    catKeepersAnimals.forEach({ animal ->
+        when (animal) {
+            is Cat -> {}
+            else -> throw AssertionError("catKeepersAnimals contained a non-cat animal")
+        }
+    })
     // 7. animals for keeper name
-    zooFull.getAnimalsForKeeperName(keeperBigGood.name)
-    // ???
+    var bigKeepersAnimals = zooFull.getAnimalsForKeeperName(keeperBigGood.name)
+    bigKeepersAnimals.forEach { println(it.height) } // TODO POBLEM - IF REMOVED SAME NAMES CAN BE REMOVED, NEED TO COUNT THEM
+    assert(bigKeepersAnimals.size == 2)
+    zooFull.removeAnimalById(3)
+    var bigKeepersAnimalsAfterDeletingOne = zooFull.getAnimalsForKeeperName(keeperBigGood.name)
+    assert(bigKeepersAnimalsAfterDeletingOne.size == 1)
     // 8. animals with height bigger than
     val tallAnimals = zooFull.getAnimalsHeigherThan(1.5)
-    assert(tallAnimals.size == 2)
-    assert(tallAnimals.filter({ animal -> animal.height > 1.5 }).size == 2)
+    assert(tallAnimals.size == 1)
+    assert(tallAnimals.filter({ animal -> animal.height > 1.5 }).size == 1)
     // 9. animals that are able to make sounds
     val loudAnimals = zooFull.getAllLoudAnimals()
-    assert(loudAnimals.size == 4)
+    assert(loudAnimals.size == 3)
     loudAnimals.forEach({ animal ->
         when (animal) {
             is LoudAnimal -> println(animal.sound())
@@ -171,7 +183,12 @@ fun main() {
         }
     })
     // 10.
-    zooFull.getAllAnimalsOfType<Cat>().forEach { println(it.id) }
-    // ???
+    zooFull.getAllAnimalsOfType<Cat>().forEach {
+        when (it) {
+            is Cat -> {}
+            else -> throw AssertionError("zooFull.getAllAnimalsOfType<Cat> contained a non-cat animal")
+        }
+    }
 }
+
 
