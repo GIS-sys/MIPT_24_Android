@@ -49,6 +49,7 @@ class Zoo {
     var animalIdToKeeper = HashMap<TypeID, Keeper>()
     var keeperIdToAnimals = HashMap<TypeID, HashMap<TypeID, Animal>>()
     var keeperNameToAnimals = HashMap<String, HashMap<TypeID, Animal>>()
+    var keeperNameToAnimalsAmount = HashMap<String, HashMap<TypeID, Long>>()
 
     constructor() {
     }
@@ -66,10 +67,22 @@ class Zoo {
     fun attachKeeper(keeper: Keeper, animal: Animal) {
         if (!this.keeperIdToAnimals.contains(keeper.id)) {
             this.keeperIdToAnimals.put(keeper.id, HashMap<TypeID, Animal>())
+        }
+        if (!this.keeperNameToAnimals.contains(keeper.name)) {
             this.keeperNameToAnimals.put(keeper.name, HashMap<TypeID, Animal>())
+            this.keeperNameToAnimalsAmount.put(keeper.name, HashMap<TypeID, Long>())
+        }
+        if (!this.keeperNameToAnimalsAmount.getValue(keeper.name).contains(animal.id)) {
+            this.keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, 0L)
+        }
+        // if already exists keeper for this animal
+        if (this.animalIdToKeeper.contains(animal.id)) {
+            throw IllegalArgumentException("Zoo::attachKeeper - animal already has a keeper")
         }
         this.keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
         this.keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
+        val prevAmount = this.keeperNameToAnimalsAmount.getValue(keeper.name).getValue(animal.id)
+        this.keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, prevAmount + 1)
         this.animalIdToKeeper.put(animal.id, keeper)
     }
 
@@ -78,7 +91,11 @@ class Zoo {
         if (animalIdToKeeper.contains(id)) {
             val keeper = animalIdToKeeper.getValue(id)
             this.keeperIdToAnimals.getValue(keeper.id).remove(id)
-            this.keeperNameToAnimals.getValue(keeper.name).remove(id)
+            val prevAmount = this.keeperNameToAnimalsAmount.getValue(keeper.name).getValue(id)
+            if (prevAmount == 1L) {
+                this.keeperNameToAnimals.getValue(keeper.name).remove(id)
+            }
+            this.keeperNameToAnimalsAmount.getValue(keeper.name).put(id, prevAmount - 1)
             animalIdToKeeper.remove(id)
         }
     }
@@ -163,19 +180,27 @@ fun main() {
         }
     })
     // 7. animals for keeper name
+    // init
     var bigKeepersAnimals = zooFull.getAnimalsForKeeperName(keeperBigGood.name)
-    bigKeepersAnimals.forEach { println(it.height) } // TODO POBLEM - IF REMOVED SAME NAMES CAN BE REMOVED, NEED TO COUNT THEM
     assert(bigKeepersAnimals.size == 2)
+    // delete one
     zooFull.removeAnimalById(3)
     var bigKeepersAnimalsAfterDeletingOne = zooFull.getAnimalsForKeeperName(keeperBigGood.name)
     assert(bigKeepersAnimalsAfterDeletingOne.size == 1)
+    // delete two
+    zooFull.removeAnimalById(4)
+    var bigKeepersAnimalsAfterDeletingAll = zooFull.getAnimalsForKeeperName(keeperBigGood.name)
+    assert(bigKeepersAnimalsAfterDeletingAll.size == 0)
+    // add back two animals
+    zooFull.addAnimal(Hippo(10, 3.6))
+    zooFull.addAnimal(Horse(11, 2.1))
     // 8. animals with height bigger than
     val tallAnimals = zooFull.getAnimalsHeigherThan(1.5)
-    assert(tallAnimals.size == 1)
-    assert(tallAnimals.filter({ animal -> animal.height > 1.5 }).size == 1)
+    assert(tallAnimals.size == 2)
+    assert(tallAnimals.filter({ animal -> animal.height > 1.5 }).size == 2)
     // 9. animals that are able to make sounds
     val loudAnimals = zooFull.getAllLoudAnimals()
-    assert(loudAnimals.size == 3)
+    assert(loudAnimals.size == 4)
     loudAnimals.forEach({ animal ->
         when (animal) {
             is LoudAnimal -> println(animal.sound())
