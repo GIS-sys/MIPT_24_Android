@@ -15,3 +15,5 @@ or run `../../compile_and_run.sh`
 
 https://kotlinlang.org/education/
 
+https://play.kotlinlang.org/byExample/05_Collections/01_List
+
