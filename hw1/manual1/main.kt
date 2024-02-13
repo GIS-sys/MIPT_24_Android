@@ -1,12 +1,12 @@
 typealias TypeID = Long
 typealias TypeHeight = Double
 
-interface Animal {
+sealed interface Animal {
     val id: TypeID
     val height: TypeHeight
 }
 
-interface LoudAnimal : Animal {
+sealed interface LoudAnimal : Animal {
     fun sound(): String
 }
 
@@ -128,7 +128,7 @@ class Zoo {
     }
 
     inline fun <reified T: Animal> getAllAnimalsOfType(): List<Animal> {
-        return this.idToAnimal.values.filter { T::class.java.isAssignableFrom(it.javaClass) }
+        return this.idToAnimal.values.filter { it is T }
     }
 }
 
