@@ -1,17 +1,10 @@
-## How to use
+# Description
 
-### Compile and run:
-```bash
-kotlinc main.kt -include-runtime -d hello.jar
-java -jar hello.jar
-```
-or cd to the folder with main.kt and run `../../compile_and_run.sh`
+This repository is for MIPT Android course homeworks
 
-## Useful links
+# Structure
 
-### Kotlin docs
+- hw\_kotlin/ contains all 6 tasks from first homework
 
-https://kotlinlang.org/education/
-
-https://play.kotlinlang.org/byExample/05_Collections/01_List
+- project/ contains main project
 
