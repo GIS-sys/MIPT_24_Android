@@ -1,6 +1,6 @@
 class Node(var key: Long) {
-    var childLeft: Node? = null
-    var childRight: Node? = null
+    private var childLeft: Node? = null
+    private var childRight: Node? = null
 
     fun add(newValue: Long) {
         if (this.key <= newValue) {
@@ -18,22 +18,22 @@ class Node(var key: Long) {
         }
     }
 
-    fun preOrder(foo: (value: Long) -> Unit) {
-        foo(this.key)
+    fun preOrder(callback: (value: Long) -> Unit) {
+        callback(this.key)
         if (childLeft != null) {
-            childLeft?.preOrder(foo)
+            childLeft?.preOrder(callback)
         }
         if (childRight != null) {
-            childRight?.preOrder(foo)
+            childRight?.preOrder(callback)
         }
     }
 }
 
 fun main(args: Array<String>) {
-    var n = readln().toLong()
+    var n = readln().toInt()
     var rootNumber = readln().toLong()
     var tree = Node(rootNumber)
-    for (i in 2..n) {
+    repeat(n - 1) {
         var number = readln().toLong()
         tree.add(number)
     }
