@@ -1,25 +1,25 @@
 import java.io.File
 
+data class ValueWithMax(val value: Long, val max: Long)
+
 class StackWithMaximum {
-    var listMain: MutableList<Long> = mutableListOf()
-    var listMax: MutableList<Long> = mutableListOf()
+    private val listWithMax: MutableList<ValueWithMax> = mutableListOf()
 
     fun push(value: Long) {
-        listMax += if (this.empty() || value > max()) value else max()
-        listMain += value
+        val newMax = if (this.empty() || value > max()) value else max()
+        listWithMax += ValueWithMax(value, newMax)
     }
 
     fun empty(): Boolean {
-        return listMain.size == 0
+        return listWithMax.size == 0
     }
 
     fun pop() {
-        listMain.removeLast()
-        listMax.removeLast()
+        listWithMax.removeLast()
     }
 
     fun max(): Long {
-        return listMax.last()
+        return listWithMax.last().max
     }
 }
 
