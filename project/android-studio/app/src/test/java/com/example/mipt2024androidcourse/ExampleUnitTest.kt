@@ -1,4 +1,4 @@
-package com.example.miptandroidcourse2024
+package com.example.mipt2024androidcourse
 
 import org.junit.Test
 

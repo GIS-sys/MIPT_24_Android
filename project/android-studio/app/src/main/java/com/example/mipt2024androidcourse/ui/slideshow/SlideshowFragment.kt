@@ -1,4 +1,4 @@
-package com.example.miptandroidcourse2024.ui.slideshow
+package com.example.mipt2024androidcourse.ui.slideshow
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.miptandroidcourse2024.databinding.FragmentSlideshowBinding
+import com.example.mipt2024androidcourse.databinding.FragmentSlideshowBinding
 
 class SlideshowFragment : Fragment() {
 

@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MIPT Android Course 2024"
+rootProject.name = "MIPT 2024 Android Course"
 include(":app")
  

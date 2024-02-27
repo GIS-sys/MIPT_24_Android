@@ -1,4 +1,4 @@
-package com.example.miptandroidcourse2024
+package com.example.mipt2024androidcourse
 
 import android.os.Bundle
 import android.view.Menu
@@ -11,7 +11,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
-import com.example.miptandroidcourse2024.databinding.ActivityMainBinding
+import com.example.mipt2024androidcourse.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 

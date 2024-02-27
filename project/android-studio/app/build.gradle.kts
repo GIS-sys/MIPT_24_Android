@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.miptandroidcourse2024"
+    namespace = "com.example.mipt2024androidcourse"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.miptandroidcourse2024"
+        applicationId = "com.example.mipt2024androidcourse"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
