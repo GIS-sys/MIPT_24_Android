@@ -1,127 +1,150 @@
-// Common.kt
-
-typealias TypeID = Long
-
 // Animal.kt
 
-typealias TypeHeight = Double
+typealias TypeAnimalID = Long
+typealias TypeAnimalHeight = Double
 
 sealed interface Animal {
-    val id: TypeID
-    val height: TypeHeight
+    val id: TypeAnimalID
+    val height: TypeAnimalHeight
 }
 
 sealed interface LoudAnimal : Animal {
     fun sound(): String
 }
 
-class Cat(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
+class Cat(override val id: TypeAnimalID, override val height: TypeAnimalHeight): LoudAnimal {
     override fun sound(): String {
         return "purr"
     }
 }
 
-class Dog(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
+class Dog(override val id: TypeAnimalID, override val height: TypeAnimalHeight): LoudAnimal {
     override fun sound(): String {
         return "bow-wow"
     }
 }
 
-class Hippo(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
+class Hippo(override val id: TypeAnimalID, override val height: TypeAnimalHeight): LoudAnimal {
     override fun sound(): String {
         return "hohoho"
     }
 }
 
-class Horse(override val id: TypeID, override val height: TypeHeight): LoudAnimal {
+class Horse(override val id: TypeAnimalID, override val height: TypeAnimalHeight): LoudAnimal {
     override fun sound(): String {
         return "neigh"
     }
 }
 
-class Fish(override val id: TypeID, override val height: TypeHeight): Animal {
+class Fish(override val id: TypeAnimalID, override val height: TypeAnimalHeight): Animal {
 }
 
 // Keeper.kt
 
-data class Keeper(var id: TypeID, var name: String)
+typealias TypeKeeperID = Long
+
+data class Keeper(var id: TypeKeeperID, var name: String)
 
 // Zoo.kt
 
 class Zoo {
-    var idToAnimal = HashMap<TypeID, Animal>()
-    var animalIdToKeeper = HashMap<TypeID, Keeper>()
-    var keeperIdToAnimals = HashMap<TypeID, HashMap<TypeID, Animal>>()
-    var keeperNameToAnimals = HashMap<String, HashMap<TypeID, Animal>>()
-    var keeperNameToAnimalsAmount = HashMap<String, HashMap<TypeID, Long>>()
+    val keeperRoot = Keeper(0, "The Head of the Zoo")
+    val idToAnimal = HashMap<TypeAnimalID, Animal>()
+    val animalIdToKeeper = HashMap<TypeAnimalID, Keeper>()
+    val keeperIdToAnimals = HashMap<TypeKeeperID, HashMap<TypeAnimalID, Animal>>()
+    val keeperNameToAnimals = HashMap<String, HashMap<TypeAnimalID, Animal>>()
+
+    // private methods
+
+    private fun addKeeper(keeper: Keeper) {
+        if (keeperIdToAnimals.contains(keeper.id)) {
+            throw IllegalArgumentException("Zoo::addKeeper - keeper with this id already exists")
+        }
+        keeperIdToAnimals.put(keeper.id, HashMap<TypeAnimalID, Animal>())
+        if (!keeperNameToAnimals.contains(keeper.name)) {
+            keeperNameToAnimals.put(keeper.name, HashMap<TypeAnimalID, Animal>())
+        }
+    }
+
+    private fun disconnectAnimalFromKeeper(animal: Animal) {
+        val keeper: Keeper = animalIdToKeeper.getValue(animal.id)
+        keeperIdToAnimals.getValue(keeper.id).remove(animal.id)
+        keeperNameToAnimals.getValue(keeper.name).remove(animal.id)
+        animalIdToKeeper.remove(animal.id)
+    }
+
+    private fun connectExistingKeeperAnimal(keeper: Keeper, animal: Animal) {
+        if (animalIdToKeeper.contains(animal.id)) {
+            disconnectAnimalFromKeeper(animal)
+        }
+        animalIdToKeeper.put(animal.id, keeper)
+        keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
+        keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
+    }
+
+    // public methods
 
     constructor() {
+        addKeeper(keeperRoot)
     }
 
     constructor(animals: List<Animal>) {
+        addKeeper(keeperRoot)
         animals.forEach {
             addAnimal(it)
         }
     }
 
     fun addAnimal(animal: Animal) {
+        if (idToAnimal.contains(animal.id)) {
+            throw IllegalArgumentException("Zoo::addAnimal - animal with this id already exists")
+        }
         idToAnimal.put(animal.id, animal)
+        connectExistingKeeperAnimal(keeperRoot, animal)
     }
 
     fun attachKeeper(keeper: Keeper, animal: Animal) {
+        if (!idToAnimal.contains(animal.id)) {
+            addAnimal(animal)
+        }
         if (!keeperIdToAnimals.contains(keeper.id)) {
-            keeperIdToAnimals.put(keeper.id, HashMap<TypeID, Animal>())
+            addKeeper(keeper)
         }
-        if (!keeperNameToAnimals.contains(keeper.name)) {
-            keeperNameToAnimals.put(keeper.name, HashMap<TypeID, Animal>())
-            keeperNameToAnimalsAmount.put(keeper.name, HashMap<TypeID, Long>())
-        }
-        if (!keeperNameToAnimalsAmount.getValue(keeper.name).contains(animal.id)) {
-            keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, 0L)
-        }
-        // if already exists keeper for this animal
-        if (animalIdToKeeper.contains(animal.id)) {
-            throw IllegalArgumentException("Zoo::attachKeeper - animal already has a keeper")
-        }
-        keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
-        keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
-        val prevAmount = keeperNameToAnimalsAmount.getValue(keeper.name).getValue(animal.id)
-        keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, prevAmount + 1)
-        animalIdToKeeper.put(animal.id, keeper)
+        connectExistingKeeperAnimal(keeper, animal)
     }
 
-    fun removeAnimalById(id: TypeID) {
+    fun removeAnimalById(id: TypeAnimalID) {
+        if (!idToAnimal.contains(id)) {
+            throw IllegalArgumentException("Zoo::removeAnimalById - no animal with this id")
+        }
+        disconnectAnimalFromKeeper(idToAnimal.getValue(id))
         idToAnimal.remove(id)
-        if (animalIdToKeeper.contains(id)) {
-            val keeper = animalIdToKeeper.getValue(id)
-            keeperIdToAnimals.getValue(keeper.id).remove(id)
-            val prevAmount = keeperNameToAnimalsAmount.getValue(keeper.name).getValue(id)
-            if (prevAmount == 1L) {
-                keeperNameToAnimals.getValue(keeper.name).remove(id)
-            }
-            keeperNameToAnimalsAmount.getValue(keeper.name).put(id, prevAmount - 1)
-            animalIdToKeeper.remove(id)
-        }
     }
 
-    fun findAnimalById(id: TypeID): Animal {
+    fun findAnimalById(id: TypeAnimalID): Animal {
+        if (!idToAnimal.contains(id)) {
+            throw IllegalArgumentException("Zoo::findAnimalById - no animal with this id")
+        }
         return idToAnimal.getValue(id)
     }
 
-    fun getAnimalsForKeeperId(id: TypeID): List<Animal> {
-        return ArrayList(keeperIdToAnimals.getValue(id).values)
+    fun getAnimalsForKeeperId(id: TypeKeeperID): Collection<Animal> {
+        return keeperIdToAnimals.getValue(id).values
     }
 
-    fun getAnimalsForKeeperName(name: String): List<Animal> {
-        return ArrayList(keeperNameToAnimals.getValue(name).values)
+    fun getAnimalsForKeeperName(name: String): Collection<Animal> {
+        return keeperNameToAnimals.getValue(name).values
     }
 
     // since as far as task implies height may be random,
     //   such structures as TreeMap will not be faster
-    fun getAnimalsHeigherThan(height: TypeHeight): List<Animal> {
-        return idToAnimal.values.filter { it.height > height }
+    fun getAnimalsHeigherThan(height: TypeAnimalHeight): List<Animal> {
+        //return idToAnimal.values.filter { it.height > height }
+        // TODO
+        return ArrayList<Animal>()
     }
 
+    // this could have been faster but i really dont want to add another hashmap "isLoud -> animal"
     fun getAllLoudAnimals(): List<Animal> {
         return idToAnimal.values.filter {
             when (it) {
@@ -161,7 +184,7 @@ fun main() {
     zooFull.removeAnimalById(2)
     try {
         zooFull.findAnimalById(2)
-    } catch (e: java.util.NoSuchElementException) {
+    } catch (e: IllegalArgumentException) {
     }
     // 5. attach keeper
     val keeperCats = Keeper(1, "keeper number one")
@@ -171,9 +194,9 @@ fun main() {
     zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5))
     zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3))
     zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4))
-    assert(zooFull.animalIdToKeeper.size == 4)
-    assert(zooFull.keeperIdToAnimals.size == 3)
-    assert(zooFull.keeperNameToAnimals.size == 2)
+    assert(zooFull.animalIdToKeeper.size == zooFull.idToAnimal.size)
+    assert(zooFull.keeperIdToAnimals.size == 3 + 1)
+    assert(zooFull.keeperNameToAnimals.size == 2 + 1)
     // 6. animals for keeper id
     var catKeepersAnimals = zooFull.getAnimalsForKeeperId(keeperCats.id)
     assert(catKeepersAnimals.size == 2)
