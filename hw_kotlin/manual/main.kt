@@ -60,46 +60,46 @@ class Zoo {
 
     constructor(animals: List<Animal>) {
         animals.forEach {
-            this.addAnimal(it)
+            addAnimal(it)
         }
     }
 
     fun addAnimal(animal: Animal) {
-        this.idToAnimal.put(animal.id, animal)
+        idToAnimal.put(animal.id, animal)
     }
 
     fun attachKeeper(keeper: Keeper, animal: Animal) {
-        if (!this.keeperIdToAnimals.contains(keeper.id)) {
-            this.keeperIdToAnimals.put(keeper.id, HashMap<TypeID, Animal>())
+        if (!keeperIdToAnimals.contains(keeper.id)) {
+            keeperIdToAnimals.put(keeper.id, HashMap<TypeID, Animal>())
         }
-        if (!this.keeperNameToAnimals.contains(keeper.name)) {
-            this.keeperNameToAnimals.put(keeper.name, HashMap<TypeID, Animal>())
-            this.keeperNameToAnimalsAmount.put(keeper.name, HashMap<TypeID, Long>())
+        if (!keeperNameToAnimals.contains(keeper.name)) {
+            keeperNameToAnimals.put(keeper.name, HashMap<TypeID, Animal>())
+            keeperNameToAnimalsAmount.put(keeper.name, HashMap<TypeID, Long>())
         }
-        if (!this.keeperNameToAnimalsAmount.getValue(keeper.name).contains(animal.id)) {
-            this.keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, 0L)
+        if (!keeperNameToAnimalsAmount.getValue(keeper.name).contains(animal.id)) {
+            keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, 0L)
         }
         // if already exists keeper for this animal
-        if (this.animalIdToKeeper.contains(animal.id)) {
+        if (animalIdToKeeper.contains(animal.id)) {
             throw IllegalArgumentException("Zoo::attachKeeper - animal already has a keeper")
         }
-        this.keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
-        this.keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
-        val prevAmount = this.keeperNameToAnimalsAmount.getValue(keeper.name).getValue(animal.id)
-        this.keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, prevAmount + 1)
-        this.animalIdToKeeper.put(animal.id, keeper)
+        keeperIdToAnimals.getValue(keeper.id).put(animal.id, animal)
+        keeperNameToAnimals.getValue(keeper.name).put(animal.id, animal)
+        val prevAmount = keeperNameToAnimalsAmount.getValue(keeper.name).getValue(animal.id)
+        keeperNameToAnimalsAmount.getValue(keeper.name).put(animal.id, prevAmount + 1)
+        animalIdToKeeper.put(animal.id, keeper)
     }
 
     fun removeAnimalById(id: TypeID) {
         idToAnimal.remove(id)
         if (animalIdToKeeper.contains(id)) {
             val keeper = animalIdToKeeper.getValue(id)
-            this.keeperIdToAnimals.getValue(keeper.id).remove(id)
-            val prevAmount = this.keeperNameToAnimalsAmount.getValue(keeper.name).getValue(id)
+            keeperIdToAnimals.getValue(keeper.id).remove(id)
+            val prevAmount = keeperNameToAnimalsAmount.getValue(keeper.name).getValue(id)
             if (prevAmount == 1L) {
-                this.keeperNameToAnimals.getValue(keeper.name).remove(id)
+                keeperNameToAnimals.getValue(keeper.name).remove(id)
             }
-            this.keeperNameToAnimalsAmount.getValue(keeper.name).put(id, prevAmount - 1)
+            keeperNameToAnimalsAmount.getValue(keeper.name).put(id, prevAmount - 1)
             animalIdToKeeper.remove(id)
         }
     }
@@ -119,11 +119,11 @@ class Zoo {
     // since as far as task implies height may be random,
     //   such structures as TreeMap will not be faster
     fun getAnimalsHeigherThan(height: TypeHeight): List<Animal> {
-        return this.idToAnimal.values.filter { it.height > height }
+        return idToAnimal.values.filter { it.height > height }
     }
 
     fun getAllLoudAnimals(): List<Animal> {
-        return this.idToAnimal.values.filter {
+        return idToAnimal.values.filter {
             when (it) {
                 is LoudAnimal -> true
                 else -> false
@@ -132,7 +132,7 @@ class Zoo {
     }
 
     inline fun <reified T: Animal> getAllAnimalsOfType(): List<Animal> {
-        return this.idToAnimal.values.filter { it is T }
+        return idToAnimal.values.filter { it is T }
     }
 }
 
