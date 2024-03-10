@@ -50,6 +50,7 @@ data class Keeper(var id: TypeKeeperID, var name: String)
 class Zoo {
     val keeperRoot = Keeper(0, "The Head of the Zoo")
     val idToAnimal = HashMap<TypeAnimalID, Animal>()
+    val heightToAnimal = java.util.TreeMap<TypeAnimalHeight, HashMap<TypeAnimalID, Animal>>()
     val animalIdToKeeper = HashMap<TypeAnimalID, Keeper>()
     val keeperIdToAnimals = HashMap<TypeKeeperID, HashMap<TypeAnimalID, Animal>>()
     val keeperNameToAnimals = HashMap<String, HashMap<TypeAnimalID, Animal>>()
@@ -100,6 +101,10 @@ class Zoo {
             throw IllegalArgumentException("Zoo::addAnimal - animal with this id already exists")
         }
         idToAnimal.put(animal.id, animal)
+        if (!heightToAnimal.contains(animal.height)) {
+            heightToAnimal.put(animal.height, HashMap<TypeAnimalID, Animal>())
+        }
+        heightToAnimal.getValue(animal.height).put(animal.id, animal)
         connectExistingKeeperAnimal(keeperRoot, animal)
     }
 
@@ -117,8 +122,10 @@ class Zoo {
         if (!idToAnimal.contains(id)) {
             throw IllegalArgumentException("Zoo::removeAnimalById - no animal with this id")
         }
-        disconnectAnimalFromKeeper(idToAnimal.getValue(id))
-        idToAnimal.remove(id)
+        val animalToDelete = idToAnimal.getValue(id)
+        disconnectAnimalFromKeeper(animalToDelete)
+        heightToAnimal.getValue(animalToDelete.height).remove(animalToDelete.id)
+        idToAnimal.remove(animalToDelete.id)
     }
 
     fun findAnimalById(id: TypeAnimalID): Animal {
@@ -136,12 +143,8 @@ class Zoo {
         return keeperNameToAnimals.getValue(name).values
     }
 
-    // since as far as task implies height may be random,
-    //   such structures as TreeMap will not be faster
-    fun getAnimalsHeigherThan(height: TypeAnimalHeight): List<Animal> {
-        //return idToAnimal.values.filter { it.height > height }
-        // TODO
-        return ArrayList<Animal>()
+    fun getAnimalsHeigherThan(height: TypeAnimalHeight): Collection<Animal> {
+        return heightToAnimal.tailMap(height).values.map{it.values}.flatten()
     }
 
     // this could have been faster but i really dont want to add another hashmap "isLoud -> animal"
