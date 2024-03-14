@@ -128,9 +128,9 @@ class Zoo {
         idToAnimal.remove(animalToDelete.id)
     }
 
-    fun findAnimalById(id: TypeAnimalID): Animal {
+    fun findAnimalById(id: TypeAnimalID): Animal? {
         if (!idToAnimal.contains(id)) {
-            throw IllegalArgumentException("Zoo::findAnimalById - no animal with this id")
+            return null
         }
         return idToAnimal.getValue(id)
     }
@@ -182,21 +182,18 @@ fun main() {
     zooFull.addAnimal(Fish(6, 0.05))
     assert(zooFull.idToAnimal.size == 6)
     // 4. find and remove animal
-    assert(zooFull.findAnimalById(1).height == 0.25)
-    assert(zooFull.findAnimalById(2).height == 0.5)
+    assert(zooFull.findAnimalById(1)?.height == 0.25)
+    assert(zooFull.findAnimalById(2)?.height == 0.5)
     zooFull.removeAnimalById(2)
-    try {
-        zooFull.findAnimalById(2)
-    } catch (e: IllegalArgumentException) {
-    }
+    assert(zooFull.findAnimalById(2) == null)
     // 5. attach keeper
     val keeperCats = Keeper(1, "keeper number one")
     val keeperBigGood = Keeper(2, "superhero underground")
     val keeperBigEvil = Keeper(3, "superhero underground")
-    zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(1))
-    zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5))
-    zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3))
-    zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4))
+    zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(1)!!)
+    zooFull.attachKeeper(keeperCats, zooFull.findAnimalById(5)!!)
+    zooFull.attachKeeper(keeperBigGood, zooFull.findAnimalById(3)!!)
+    zooFull.attachKeeper(keeperBigEvil, zooFull.findAnimalById(4)!!)
     assert(zooFull.animalIdToKeeper.size == zooFull.idToAnimal.size)
     assert(zooFull.keeperIdToAnimals.size == 3 + 1)
     assert(zooFull.keeperNameToAnimals.size == 2 + 1)
